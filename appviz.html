@@ -1,0 +1,353 @@
+
+<!doctype html>
+<html>
+<head>
+    <title>SDN Network Builder - Application Visualization</title>
+
+    <style>
+        body {
+            color: #d3d3d3;
+            font: 12pt arial;
+            background-color: #222222;
+        }
+
+        #mynetwork {
+            border: 1px solid #444444;
+            background-color: #222222;
+            width: 1100px;
+            height : 700px;
+        }
+		
+		.switch {
+		  position: relative;
+		  display: inline-block;
+		  width: 60px;
+		  height: 34px;
+		}
+
+		/* Hide default HTML checkbox */
+		.switch input {
+		  opacity: 0;
+		  width: 0;
+		  height: 0;
+		}
+
+		/* The slider */
+		.slider {
+		  position: absolute;
+		  cursor: pointer;
+		  top: 0;
+		  left: 0;
+		  right: 0;
+		  bottom: 0;
+		  background-color: #ccc;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		.slider:before {
+		  position: absolute;
+		  content: "";
+		  height: 26px;
+		  width: 26px;
+		  left: 4px;
+		  bottom: 4px;
+		  background-color: white;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		input:checked + .slider {
+		  background-color: #2196F3;
+		}
+
+		input:focus + .slider {
+		  box-shadow: 0 0 1px #2196F3;
+		}
+
+		input:checked + .slider:before {
+		  -webkit-transform: translateX(26px);
+		  -ms-transform: translateX(26px);
+		  transform: translateX(26px);
+		}
+
+		/* Rounded sliders */
+		.slider.round {
+		  border-radius: 34px;
+		}
+
+		.slider.round:before {
+		  border-radius: 50%;
+		}
+		
+		.column {
+		  float: left;
+		  padding: 10px;
+		}
+
+		/* Clear floats after the columns */
+		.row:after {
+		  content: "";
+		  display: table;
+		  clear: both;
+		}
+		
+		#eventSpan {
+            border: 0px solid #444444;
+            background-color: #222222;
+            width: 250px;
+            height : 700px;
+        }
+	
+    </style>
+
+    <script type="text/javascript" src="vis-network.min.js"></script>
+	<script type="text/javascript" src="appviz.js"></script>
+</head>
+
+<body>
+<div class="column">
+	<i class="fa fa-flag"></i>SDN Network Builder - Application Visualization</h3>
+<div/>
+
+
+<div class="column">
+	<label for="myCheck">Freeze Graph :</label> 
+	<input type="checkbox" id="myCheck" onclick=myFunction()>
+<div/>
+
+<div class = "column" id="mynetwork"></div>
+<div class="column" <pre id="eventSpan"></pre> </div>
+
+<script type="text/javascript">
+
+    // create a network
+    var container = document.getElementById('mynetwork');
+    var data = {
+        nodes: nodes,
+        edges: edges,
+    };
+	
+
+    var options = {
+        nodes: {
+            shape: 'dot',
+            size: 20,
+            font: {
+                size: 15,
+                color: '#ffffff'
+            },
+            borderWidth: 2
+        },
+        edges: {
+            width: 4,
+            type: "arrow",
+            arrows: "middle",
+            color: {'inherit': 'both', 'opacity': 0.3}
+        },
+        groups: {
+            device: {
+                color: {
+                    opacity:0.4,
+                    inherit:'from',
+                    background:'#FF0000',
+                    border:'#E0E0E0',
+                    highlight: {
+                        border: '#FF0000',
+                        background: '#000000',
+                        opacity: 1
+                    },
+                    font:{
+                        size:20,
+                        color: '#2a5b11'
+                    },
+                },
+                shape: 'box'
+            },
+            sel2740s: {
+                color: {
+                    background:'#003b70',
+                    border:'#E0E0E0',
+                    highlight: {
+                        border: '#FF0000',
+                        background: '#2a5b11',
+                    },
+                    font: {
+                        size: 15,
+                        color: '#000000'
+                    },
+                },
+                shape: 'box'
+            },            
+            application: {
+                    color: {
+                        background:'#000000',
+                        border:'#FF0000',
+                        highlight: {
+                            border: '#E0E0E0',
+                            background: '#003b70',
+                        },
+                    font:{
+                        size:20,
+                        color: '#003b70'
+                    },
+                },
+                shape: 'ellipse',
+            },
+            source: {
+                color:{border:'#E0E0E0'}
+            }
+		},
+		interaction:{
+			dragNodes: true, 
+			dragView: true, 
+			zoomView: true,
+			navigationButtons : true,
+			keyboard: true,
+			hover:true, 
+			tooltipDelay: 3600000,
+		},
+		physics:{
+			enabled: true,
+		},
+	};
+
+	var network = new vis.Network(container, data, options);
+	network.stabilize(2000);
+
+
+	 network.on("click",function(params){
+		//Check if you clicked on a node; if so, display the title (if any) in a popup
+		network.interactionHandler._checkShowPopup(params.pointer.DOM);
+	});
+/*
+      network.on("click", function (params) {
+        params.event = "[original event]";
+		network.interactionHandler._checkShowPopup(params.pointer.DOM);
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>Click event:</h2>" + JSON.stringify(params, null, 4);
+        <!-- console.log( -->
+          <!-- "click event, getNodeAt returns: " + -->
+            <!-- this.getNodeAt(params.pointer.DOM) -->
+        <!-- ); -->
+      });
+	  
+
+
+      network.on("doubleClick", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>doubleClick event:</h2>" + JSON.stringify(params, null, 4);
+      });
+      network.on("oncontext", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>oncontext (right click) event:</h2>" +
+          JSON.stringify(params, null, 4);
+      });
+      network.on("dragStart", function (params) {
+        // There's no point in displaying this event on screen, it gets immediately overwritten
+        params.event = "[original event]";
+        console.log("dragStart Event:", params);
+        console.log(
+          "dragStart event, getNodeAt returns: " +
+            this.getNodeAt(params.pointer.DOM)
+        );
+      });
+      network.on("dragging", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>dragging event:</h2>" + JSON.stringify(params, null, 4);
+      });
+      network.on("dragEnd", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>dragEnd event:</h2>" + JSON.stringify(params, null, 4);
+        console.log("dragEnd Event:", params);
+        console.log(
+          "dragEnd event, getNodeAt returns: " +
+            this.getNodeAt(params.pointer.DOM)
+        );
+      });
+      network.on("controlNodeDragging", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>control node dragging event:</h2>" +
+          JSON.stringify(params, null, 4);
+      });
+      network.on("controlNodeDragEnd", function (params) {
+        params.event = "[original event]";
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>control node drag end event:</h2>" +
+          JSON.stringify(params, null, 4);
+        console.log("controlNodeDragEnd Event:", params);
+      });
+      network.on("zoom", function (params) {
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>zoom event:</h2>" + JSON.stringify(params, null, 4);
+      });
+	  
+	  network.on("showPopup", function (params) {
+        document.getElementById("eventSpan").innerHTML =
+          "<h2>showPopup event: </h2>" + JSON.stringify(params, null, 4);
+      });  
+	  network.on("showPopup", function () {
+		console.log("showPopup Event");
+	  });
+	  network.on("select", function (params) {
+        console.log("select Event:", params);
+      });
+      network.on("selectNode", function (params) {
+        console.log("selectNode Event:", params);
+      });
+      network.on("selectEdge", function (params) {
+        console.log("selectEdge Event:", params);
+      });
+      network.on("deselectNode", function (params) {
+        console.log("deselectNode Event:", params);
+      });
+      network.on("deselectEdge", function (params) {
+        console.log("deselectEdge Event:", params);
+      });
+      network.on("hoverNode", function (params) {
+        console.log("hoverNode Event:", params);
+      });
+      network.on("hoverEdge", function (params) {
+        console.log("hoverEdge Event:", params);
+      });
+      network.on("blurNode", function (params) {
+        console.log("blurNode Event:", params);
+      });
+      network.on("blurEdge", function (params) {
+        console.log("blurEdge Event:", params);
+      });
+
+*/
+	//Checkbox function
+	function myFunction(){
+		var checkBox = document.getElementById("myCheck");
+		var text = document.getElementById("popup");
+		checkBox.onchange = function doruc(){
+			if (checkBox.checked == true){
+				network.setOptions({physics:{enabled: false}});
+				//var network = new vis.Network(container, data, options1);
+				
+				network.stabilize();
+				alert("loading...please wait");
+			} else {
+			    network.setOptions({physics:{enabled: true}});
+				//var network = new vis.Network(container, data, options);
+				alert("loading...please wait");
+				network.stabilize();
+			}
+		};
+		//checkBox.onchange();
+	}
+
+	//myFunction();
+	
+
+	
+</script>
+</body>
+</html>
